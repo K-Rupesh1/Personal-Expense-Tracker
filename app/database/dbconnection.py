@@ -18,4 +18,4 @@ db_url=f"postgresql+psycopg2://{db_username}:{db_password}@localhost:5432/expens
 #Establish DB connection
 engine=create_engine(db_url)
 
-session=sessionmaker(autocommit=False,autoflush=False,bind=engine)
+session_start=sessionmaker(autocommit=False,autoflush=False,bind=engine)

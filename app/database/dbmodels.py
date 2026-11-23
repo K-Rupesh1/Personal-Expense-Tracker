@@ -12,16 +12,9 @@ class Expense(Base):
     category = Column(String)
     expense_date = Column(Date)
 
-class Expense1(Base):
-    __tablename__ = "expenses1"
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    amount = Column(Integer)
-    category = Column(String)
-    expense_date = Column(Date)
 class Users(Base):
     __tablename__="users"
-    id=Column(Integer,primary_key=True)
-    age = Column(Integer, nullable=True)
-    name=Column(String)
-    task=Column(String)
+    user_id=Column(Integer,primary_key=True,index=True,autoincrement=True)
+    user_name=Column(String)
+    email=Column(String)
+    password=Column(String)
