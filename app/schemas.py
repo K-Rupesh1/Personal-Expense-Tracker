@@ -12,6 +12,9 @@ class UserRegistration(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password:str
+class UserLoginResponse(BaseModel):
+    token:str
+    type:str
 
 # User Logout
 # class UserLogout(BaseModel):

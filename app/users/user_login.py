@@ -1,14 +1,29 @@
+from datetime import datetime, timedelta
+from datetime import timezone
+
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
 from app.database import dbmodels
-from app.schemas import ChangePassword, UserLogin,UserRegistration
+from app.schemas import ChangePassword, UserLogin, UserLoginResponse,UserRegistration
 from app.database.dbconnection import session_start
 from fastapi.params import Depends
 from pwdlib import PasswordHash
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
+import jwt
+import os
+from dotenv import load_dotenv
 
 router=APIRouter()
+
+load_dotenv()
+
+#JWT TOKEN
+#SECRET_KEY=os.getenv("SECRET_KEY")
+SECRET_KEY="my_secrete_key"
+print(SECRET_KEY)
+ALGORITHM="HS256"
+EXPIRY=30
 
 #Getting DB DATA
 def get_db():
@@ -57,14 +72,42 @@ def user_register(user: UserRegistration,
 
 #Login
 @router.post("/login")
-def user_login(user:UserLogin):
-    return{
-        "Email":user.Email,
-        "Password":user.Password,
-        "Status":"OK",
-        "Message":"Login Successfull"
+def user_login(login_request:UserLogin,
+               db:Session=Depends(get_db)):
+    email=login_request.email
+    password=login_request.password
+    
+    try:
+        db_user=db.query(dbmodels.Users).filter_by(email=login_request.email).first()
+        print(db_user)
+        password_hash=PasswordHash.recommended()
+        # hashed_password=password_hash.hash(login_request.password)
+        # print(hashed_password)
+        is_authorized=password_hash.verify(password,db_user.password)
         
-    }
+        if is_authorized:
+            payload={
+                "sub":login_request.email,
+                "exp":datetime.now(timezone.utc)+timedelta(minutes=EXPIRY)
+            }
+            print(payload)
+            token=jwt.encode(
+                payload,
+                SECRET_KEY,
+                algorithm=ALGORITHM
+            )
+            print(token)
+            print("token generated")
+            return UserLoginResponse(
+                token=token,
+                type="bearer"
+            )
+        else:
+            return "Wrong Username or Password"
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500,detail="error at db connection")
+        
+
     
 #Login
 # @router.post("/logout")
